@@ -192,7 +192,9 @@ TX_OUTPUTS='{"'$PAYMENT_ADDRESS'":'$PAYMENT_BTC',"'$CHANGE_ADDRESS'":'$CHANGE_BT
 check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
-RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$TX_INPUTS" "$TX_OUTPUTS")
+RAW_TX=$(bitcoin-cli -regtest -named createrawtransaction \
+  inputs='[{"txid":"'$txid'","vout":0,"sequence":1}]' \
+  outputs='{"2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP":0.15,"bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht":0.01428797}')
 check_cmd "Raw transaction creation" "RAW_TX" "$RAW_TX"
 
 echo "Successfully created raw transaction!"
