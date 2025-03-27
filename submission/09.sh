@@ -49,7 +49,7 @@ echo ""
 
 # STUDENT TASK: Decode the transaction to get the TXID
 # WRITE YOUR SOLUTION BELOW:
-txid=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq -r '.txid')
+TXID=$(bitcoin-cli -regtest decoderawtransaction "$BASE_TX" | jq -r '.txid')
 check_cmd "Transaction decoding" "TXID" "$TXID"
 
 echo "Transaction ID: $TXID"
@@ -192,9 +192,9 @@ TX_OUTPUTS='{"'$PAYMENT_ADDRESS'":'$PAYMENT_BTC',"'$CHANGE_ADDRESS'":'$CHANGE_BT
 check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
-RAW_TX=$(bitcoin-cli -regtest -named createrawtransaction \
-  inputs='[{"txid":"'$txid'","vout":0,"sequence":1}]' \
-  outputs='{"2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP":0.15,"bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht":0.01428797}')
+RAW_TX=$(bitcoin-cli -regtest createrawtransaction \
+  '[{"txid":"'$UTXO_TXID'","vout":'$UTXO_VOUT',"sequence":1}]' \
+  '{"'$PAYMENT_ADDRESS'":'$PAYMENT_BTC',"'$CHANGE_ADDRESS'":'$CHANGE_BTC'}')
 check_cmd "Raw transaction creation" "RAW_TX" "$RAW_TX"
 
 echo "Successfully created raw transaction!"
@@ -264,7 +264,9 @@ SIMPLE_TX_INPUTS='[{"txid":"'$TXID'","vout":0,"sequence":4294967293}]'
 SIMPLE_TX_OUTPUTS='{"'$TEST_ADDRESS'":0.0001}'
 
 # Create a raw transaction for signing using the SIMPLE_TX_INPUTS and SIMPLE_TX_OUTPUTS
-SIMPLE_RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$SIMPLE_TX_INPUTS" "$SIMPLE_TX_OUTPUTS")
+SIMPLE_RAW_TX=$(bitcoin-cli -regtest createrawtransaction \
+  '[{"txid":"'$TXID'","vout":0,"sequence":4294967293}]' \
+  '{"'$TEST_ADDRESS'":0.0001}')
 check_cmd "Simple transaction creation" "SIMPLE_RAW_TX" "$SIMPLE_RAW_TX"
 
 echo "Simple transaction created: ${SIMPLE_RAW_TX:0:64}... (truncated)"
@@ -305,7 +307,7 @@ check_cmd "Change output identification" "CHANGE_OUTPUT_INDEX" "$CHANGE_OUTPUT_I
 
 # STUDENT TASK: Create the input JSON structure for the child transaction
 # WRITE YOUR SOLUTION BELOW:
-CHILD_INPUTS=$(bitcoin-cli -regtest decoderawtransaction "$RAW_TX" | jq -r '.txid')
+CHILD_INPUTS='[{"txid":"'$PARENT_TXID'","vout":'$CHANGE_OUTPUT_INDEX'}]'
 check_cmd "Child input creation" "CHILD_INPUTS" "$CHILD_INPUTS"
 
 # STUDENT TASK: Calculate fees, allowing for a high fee to help the parent transaction
@@ -329,7 +331,9 @@ CHILD_OUTPUTS='{"'$CHILD_RECIPIENT'":'$CHILD_SEND_BTC'}'
 check_cmd "Child output creation" "CHILD_OUTPUTS" "$CHILD_OUTPUTS"
 
 # STUDENT TASK: Create the raw child transaction
-CHILD_RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$CHILD_INPUTS" "$CHILD_OUTPUTS")
+CHILD_RAW_TX=$(bitcoin-cli -regtest createrawtransaction \
+  '$CHILD_INPUTS' \
+  '{"'$CHILD_RECIPIENT'":'$CHILD_SEND_BTC'}')
 check_cmd "Child transaction creation" "CHILD_RAW_TX" "$CHILD_RAW_TX"
 
 echo "Successfully created child transaction with higher fee!"
@@ -357,7 +361,7 @@ echo "Secondary transaction ID: $SECONDARY_TXID"
 
 # STUDENT TASK: Create the input JSON structure with a 10-block relative timelock
 # WRITE YOUR SOLUTION BELOW:
-TIMELOCK_INPUTS=$(bitcoin-cli -regtest decoderawtransaction "$SECONDARY_TX" | jq -r '.txid')
+TIMELOCKINPUTS='[{"txid":"'$SECONDARY_TXID'","vout":0,"sequence":10}]'
 check_cmd "Timelock input creation" "TIMELOCK_INPUTS" "$TIMELOCK_INPUTS"
 
 # Recipient address for timelock funds
@@ -380,7 +384,9 @@ TIMELOCK_OUTPUTS='{"'$TIMELOCK_ADDRESS'":'$TIMELOCK_BTC'}'
 check_cmd "Timelock output creation" "TIMELOCK_OUTPUTS" "$TIMELOCK_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction with timelock
-TIMELOCK_TX=$(bitcoin-cli -regtest createrawtransaction "$TIMELOCK_INPUTS" "$TIMELOCK_OUTPUTS")
+TIMELOCK_TX=$(bitcoin-cli -regtest createrawtransaction \
+  '$TIMELOCK_TX_INPUTS' \
+  '{"'$TIMELOCK_ADDRESS'":'$TIMELOCK_BTC'}')
 check_cmd "Timelock transaction creation" "TIMELOCK_TX" "$TIMELOCK_TX"
 
 echo "Successfully created transaction with 10-block relative timelock!"
