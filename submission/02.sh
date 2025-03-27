@@ -1,4 +1,7 @@
 #!/bin/bash
 
-# Create a new Bitcoin address, for receiving change.
-bitcoin-cli -regtest createwallet "changeaddress"
+# Generate a new bech32 address for the regtest network
+change_address=$(bitcoin-cli -regtest getnewaddress "" "bech32")
+
+# Print only the address
+echo "$change_address"
