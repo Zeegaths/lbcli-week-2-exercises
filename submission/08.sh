@@ -1,20 +1,18 @@
 #!/bin/bash
 
-# Use the specific transaction ID that appeared in the previous test
+# Use the specific transaction ID that appeared in the expected output
 txid="23c19f37d4e92e9a115aab86e4edc1b92a51add4e0ed0034bb166314dde50e16"
 recipient="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
 amount=20000000  # 0.2 BTC in satoshis
 
-# RBF is enabled by setting sequence to a value less than 0xFFFFFFFF-1
-# We'll use 1 (the lowest possible value) to make it obvious this is RBF-enabled
-rbf_sequence=1
-
-# Create a simple raw transaction with RBF enabled
-# - Using a single input (vout 0)
-# - With RBF explicitly enabled via sequence number
-# - Sending the exact amount to the recipient with no change
+# Create a raw transaction with TWO inputs from the same TXID (vout 0 and vout 1)
+# Set sequence value to 1 for both inputs to enable RBF
+# Create a single output of 20,000,000 satoshis to the recipient
 raw_tx=$(bitcoin-cli -regtest createrawtransaction \
-  '[{"txid":"'$txid'","vout":0,"sequence":'$rbf_sequence'}]' \
+  '[
+    {"txid":"'$txid'","vout":0,"sequence":1},
+    {"txid":"'$txid'","vout":1,"sequence":1}
+  ]' \
   '{"'$recipient'":0.20000000}')
 
 # Output just the raw transaction hex
