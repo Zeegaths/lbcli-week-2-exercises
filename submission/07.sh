@@ -14,30 +14,15 @@ to_address="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
 amount_satoshis=20000000
 amount_btc=$(echo "scale=8; $amount_satoshis / 100000000" | bc)
 
-# Get the total input amount from the previous transaction outputs
-input_satoshis=$(bitcoin-cli -regtest decoderawtransaction "$raw_tx" | jq '[.vout[].value] | map(. * 100000000) | add | floor')
-change_satoshis=$((input_satoshis - amount_satoshis))
-change_btc=$(echo "scale=8; $change_satoshis / 100000000" | bc)
-
 # Create an inputs array using both UTXOs from the previous transaction
-inputs="["
+# Set sequence to 1 for RBF
+inputs='['
+inputs+="{\"txid\":\"$txid\",\"vout\":0,\"sequence\":1},"
+inputs+="{\"txid\":\"$txid\",\"vout\":1,\"sequence\":1}"
+inputs+=']'
 
-# Add the first output (vout 0)
-inputs+="{\"txid\":\"$txid\",\"vout\":0},"
-
-# Add the second output (vout 1)
-inputs+="{\"txid\":\"$txid\",\"vout\":1}"
-
-inputs+="]"
-
-# Create outputs with the target address and change address (we'll use the same address for change)
-outputs="{\
-\"$to_address\":$amount_btc,\
-\"$to_address\":$change_btc\
-}"
+# Create outputs with just the target address (without change)
+outputs="{\"$to_address\":$amount_btc}"
 
 # Create the raw transaction
-new_raw_tx=$(bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs")
-
-# Output the raw transaction
-echo "$new_raw_tx"
+bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs"
