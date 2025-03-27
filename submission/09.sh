@@ -193,7 +193,7 @@ check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
 RAW_TX=$(bitcoin-cli -regtest createrawtransaction \
-  '[{"txid":"'$UTXO_TXID'","vout":'$UTXO_VOUT',"sequence":1}]' \
+  '[{"txid":"'$UTXO_TXID'","vout":'$UTXO_VOUT_INDEX',"sequence":1}]' \
   '{"'$PAYMENT_ADDRESS'":'$PAYMENT_BTC',"'$CHANGE_ADDRESS'":'$CHANGE_BTC'}')
 check_cmd "Raw transaction creation" "RAW_TX" "$RAW_TX"
 
@@ -332,7 +332,7 @@ check_cmd "Child output creation" "CHILD_OUTPUTS" "$CHILD_OUTPUTS"
 
 # STUDENT TASK: Create the raw child transaction
 CHILD_RAW_TX=$(bitcoin-cli -regtest createrawtransaction \
-  '$CHILD_INPUTS' \
+  $CHILD_INPUTS \
   '{"'$CHILD_RECIPIENT'":'$CHILD_SEND_BTC'}')
 check_cmd "Child transaction creation" "CHILD_RAW_TX" "$CHILD_RAW_TX"
 
@@ -361,7 +361,7 @@ echo "Secondary transaction ID: $SECONDARY_TXID"
 
 # STUDENT TASK: Create the input JSON structure with a 10-block relative timelock
 # WRITE YOUR SOLUTION BELOW:
-TIMELOCKINPUTS='[{"txid":"'$SECONDARY_TXID'","vout":0,"sequence":10}]'
+TIMELOCK_INPUTS='[{"txid":"'$SECONDARY_TXID'","vout":0,"sequence":10}]'
 check_cmd "Timelock input creation" "TIMELOCK_INPUTS" "$TIMELOCK_INPUTS"
 
 # Recipient address for timelock funds
@@ -385,7 +385,7 @@ check_cmd "Timelock output creation" "TIMELOCK_OUTPUTS" "$TIMELOCK_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction with timelock
 TIMELOCK_TX=$(bitcoin-cli -regtest createrawtransaction \
-  '$TIMELOCK_TX_INPUTS' \
+  $TIMELOCK_INPUTS \
   '{"'$TIMELOCK_ADDRESS'":'$TIMELOCK_BTC'}')
 check_cmd "Timelock transaction creation" "TIMELOCK_TX" "$TIMELOCK_TX"
 
